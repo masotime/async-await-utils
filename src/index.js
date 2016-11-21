@@ -41,7 +41,7 @@ export function throttled(promiseGeneratingFn, batchSize = 100) {
 			// and count, we use an immediately executing function
 			// block where they do not mutate.
 			waitChain = (
-				(queue, count) => 
+				(queue, count) =>
 					waitChain.then(() => {
 						console.log(`Completed ${count}`);
 						return Promise.all(queue)
@@ -62,7 +62,7 @@ export function throttled(promiseGeneratingFn, batchSize = 100) {
 //
 // decorates a promise generating function such that if it takes too long to
 // complete, it will time out.
-// 
+//
 // WARNING: Do not mix with the throttled function above, because promises
 // will take arbitrarily longer when throttled. At the very least, put the
 // timed before throttling.
@@ -101,22 +101,22 @@ export const retryWithTimeout = ({ RETRIES, TIMEOUT }) => async (promiseFn, name
 // prevents unnecessary repetition of async function calls while the same function
 // is still in flight.
 export function reuseInFlight(promiseFn, createKey = (...args) => JSON.stringify(args)) {
-  const inflight = {};
+	const inflight = {};
 
-  return function debounced(...args) {
-    const key = createKey(...args);
-    if (!inflight.hasOwnProperty(key)) {
-      inflight[key] = promiseFn.apply(this, args).then(results => {
-        // self invalidate
-        delete inflight[key];
-        return results;
-      }, err => {
-        // still self-invalidate, then rethrow
-        delete inflight[key];
-        throw err;
-      });
-    }
+	return function debounced(...args) {
+		const key = createKey(...args);
+		if (!inflight.hasOwnProperty(key)) {
+			inflight[key] = promiseFn.apply(this, args).then(results => {
+				// self invalidate
+				delete inflight[key];
+				return results;
+			}, err => {
+				// still self-invalidate, then rethrow
+				delete inflight[key];
+				throw err;
+			});
+		}
 
-    return inflight[key];
-  };
+		return inflight[key];
+	};
 }
