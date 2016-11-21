@@ -9,4 +9,4 @@ A series of utilities to make programming with async/await easier.
 [daviddm-image]: https://david-dm.org/masotime/async-await-utils.svg?theme=shields.io
 [daviddm-url]: https://david-dm.org/masotime/async-await-utils
 [coverage-image]: https://coveralls.io/repos/github/masotime/async-await-utils/badge.svg?branch=master
-[coverage-url]: https://coveralls.io/github/masotime/async-await-utils?branch=master
+[coverage-url]: https://coveralls.io/github/masotime/async-await-utils?branch=master 
