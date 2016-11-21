@@ -64,11 +64,11 @@ async function main() {
 }
 ```
 
-* `retry(asyncFn, [attempts = 1], [task = 'promise resolution']): TBD
+* `retry(asyncFn, [attempts = 1], [task = 'promise resolution'])`: TBD
 
 * `retryWithTimeout({ RETRIES, TIMEOUT })`: TBD
 
-* `reuseInFlight(asyncFn, [createKey = (...args) => JSON.stringify(args)]): TBD
+* `reuseInFlight(asyncFn, [createKey = (...args) => JSON.stringify(args)])`: TBD
 
 [downloads-image]: https://img.shields.io/npm/dm/async-await-utils.svg?style=flat-square
 [downloads-url]: https://www.npmjs.com/package/async-await-utils
