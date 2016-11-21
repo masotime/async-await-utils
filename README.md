@@ -7,6 +7,8 @@ A series of utilities to make programming with async/await easier.
 * **HOF**: Higher Order Function
 * [**param** = **default**]: param is optional, and may have a default
 
+# API
+
 * `async sleep(duration)`: Pauses execution for the given `duration`
 
 ```
