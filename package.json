@@ -10,6 +10,10 @@
     "test": "npm run lint; BABEL_ENV=test nyc tape test/**/*.js | tap-spec",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:masotime/async-await-utils.git"
+  },  
   "author": "Benjamin Goh <masotime@gmail.com>",
   "license": "ISC",
   "dependencies": {
