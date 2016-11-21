@@ -9,7 +9,7 @@ A series of utilities to make programming with async/await easier.
 
 # API
 
-* `async sleep(duration)`: Pauses execution for the given `duration`
+### `async sleep(duration)`: Pauses execution for the given `duration`
 
 ```
 async function() {
@@ -18,7 +18,7 @@ async function() {
 }
 ```
 
-* `async execute(asyncFn, [...args])`: Runs the given asynchronous function, catching and logging any errors before rethrowing. This is useful if you want to make sure an async function's errors don't get swallowed if you forget to `catch`.
+### `async execute(asyncFn, [...args])`: Runs the given asynchronous function, catching and logging any errors before rethrowing. This is useful if you want to make sure an async function's errors don't get swallowed if you forget to `catch`.
 
 ```
 async function main(name) {
@@ -29,7 +29,7 @@ async function main(name) {
 execute(main, 'world'); // logs "hello world" then will log the "boom" error even if you don't catch
 ```
 
-* `throttled(asyncFn, [batchSize = 100])`: [**HOF**] Returns a throttled `asyncFn` that is only allowed to run `batchSize` times in parallel before it waits for the queue to catch up before proceeding. Useful if you're running async I/O functions in large numbers and don't want to overload I/O.
+### `throttled(asyncFn, [batchSize = 100])`: [**HOF**] Returns a throttled `asyncFn` that is only allowed to run `batchSize` times in parallel before it waits for the queue to catch up before proceeding. Useful if you're running async I/O functions in large numbers and don't want to overload I/O.
 
 ```
 function scrape() {
@@ -50,7 +50,7 @@ async function main() {
 }
 ```
 
-* `timed(asyncFn, timeout, [task = 'promise resolution'])`: [**HOF**] Returns a timed `asyncFn` that will time out after the given "timeout" with an error messages corresponding to the optional `task` parameter.
+### `timed(asyncFn, timeout, [task = 'promise resolution'])`: [**HOF**] Returns a timed `asyncFn` that will time out after the given "timeout" with an error messages corresponding to the optional `task` parameter.
 
 ```
 async function longTask() {
@@ -64,11 +64,11 @@ async function main() {
 }
 ```
 
-* `retry(asyncFn, [attempts = 1], [task = 'promise resolution'])`: TBD
+### `retry(asyncFn, [attempts = 1], [task = 'promise resolution'])`: TBD
 
-* `retryWithTimeout({ RETRIES, TIMEOUT })`: TBD
+### `retryWithTimeout({ RETRIES, TIMEOUT })`: TBD
 
-* `reuseInFlight(asyncFn, [createKey = (...args) => JSON.stringify(args)])`: TBD
+### `reuseInFlight(asyncFn, [createKey = (...args) => JSON.stringify(args)])`: TBD
 
 [downloads-image]: https://img.shields.io/npm/dm/async-await-utils.svg?style=flat-square
 [downloads-url]: https://www.npmjs.com/package/async-await-utils
