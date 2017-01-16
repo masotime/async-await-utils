@@ -27,9 +27,9 @@ export async function execute(fn, ...args) {
 //
 // returns a guarded version of a given async function.
 // Errors are logged during synchronous or asynchronous execution
-export async function guard(asyncFn) {
+export function guard(asyncFn) {
 	const self = this;
-	const guarded = function(...args) {
+	const guarded = async function(...args) {
 		try {
 			return asyncFn.apply(self, args).catch(err => {
 				logError(err);
