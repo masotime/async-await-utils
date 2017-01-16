@@ -4,19 +4,46 @@ import { MultiError } from 'verror';
 
 export const sleep = async duration => new Promise(ok => setTimeout(ok, duration));
 
+function logError(err) {
+	console.error(err.stack || err);
+	for (let key in err) {
+		if (key !== 'stack') {
+			console.error(`${key} = ${err[key]}`);
+		}
+	}
+}
+
 // executes a given async function, logs any errors that are thrown, then re-throws the exception
 export async function execute(fn, ...args) {
 	try {
 		return await fn.apply(this, args);
 	} catch (err) {
-		console.error(err.stack || err);
-		for (let key in err) {
-			if (key !== 'stack') {
-				console.error(`${key} = ${err[key]}`);
-			}
-		}
+		logError(err);
 		throw err;
 	}
+}
+
+// [HOF]
+//
+// returns a guarded version of a given async function.
+// Errors are logged during synchronous or asynchronous execution
+export async function guard(asyncFn) {
+	const self = this;
+	const guarded = function(...args) {
+		try {
+			return asyncFn.apply(self, args).catch(err => {
+				logError(err);
+				throw err;
+			});
+		} catch (err) {
+			logError(err);
+			throw err;
+		}
+	};
+
+	guarded.name = `Guarded(${asyncFn.name})`;
+
+	return guarded;
 }
 
 // [HOF]
