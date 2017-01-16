@@ -41,8 +41,6 @@ export function guard(asyncFn) {
 		}
 	};
 
-	guarded.name = `Guarded(${asyncFn.name})`;
-
 	return guarded;
 }
 
