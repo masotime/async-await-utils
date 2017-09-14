@@ -8,7 +8,7 @@ const MAX_DURATION_TOLERATED = (1 + TOLERANCE) * BASIC_DURATION;
 const executedWithin = (t, minimum, maximum) => async fn => {
 	const start = Date.now();
 	try {
-		await fn();	
+		await fn();
 	} finally {
 		const elapsed = Date.now() - start;
 		t.ok(elapsed >= minimum && elapsed <= maximum);
@@ -24,29 +24,32 @@ test('sleep', async t => {
 
 });
 
-test('execute', async t => {
+test('guarded', async t => {
 	t.plan(3);
 
-	const main = async name => {
+	async function working(name) {
 		await API.sleep(BASIC_DURATION);
 		return `Hello ${name}`;
 	}
 
-	const str = await API.execute(main, 'world');
-	t.equal(str, 'Hello world');
-
-	const failing = async () => {
+	async function failing() {
 		await API.sleep(BASIC_DURATION);
 		const err = new Error('failure');
 		err.other = 'pineapple';
 		throw err;
-	};
+	}
+
+	const guardedWorking = API.guarded(working);
+	const guardedFailing = API.guarded(failing);
+
+	const str = await guardedWorking('world');
+	t.equal(str, 'Hello world');
 
 	try {
-		await API.execute(failing);
+		await guardedFailing('world');
 	} catch (err) {
 		t.equal(err.message, 'failure');
-		t.equal(err.other, 'pineapple');		
+		t.equal(err.other, 'pineapple');
 	}
 });
 
@@ -67,7 +70,7 @@ test('throttled', async t => {
 	await executedWithin(t, BASIC_DURATION, MAX_DURATION_TOLERATED)(async () => {
 		triggers = 0;
 		await Promise.all(DOUBLE_SIZE.map(promiseGeneratingFn));
-		t.equal(triggers, DOUBLE_SIZE.length);	
+		t.equal(triggers, DOUBLE_SIZE.length);
 	});
 
 	// when throttled, they take their time in batches
@@ -75,15 +78,15 @@ test('throttled', async t => {
 		const throttledFn = API.throttled(promiseGeneratingFn, BATCH_SIZE);
 		triggers = 0;
 		await Promise.all(DOUBLE_SIZE.map(throttledFn));
-		t.equal(triggers, DOUBLE_SIZE.length);	
+		t.equal(triggers, DOUBLE_SIZE.length);
 	});
 
 	// but it is not throttled if it is smaller than the batch size
 	await executedWithin(t, BASIC_DURATION, MAX_DURATION_TOLERATED)(async () => {
 		const throttledFn = API.throttled(promiseGeneratingFn, BATCH_SIZE);
-		triggers = 0;		
+		triggers = 0;
 		await Promise.all(LESS_THAN_SIZE.map(throttledFn));
-		t.equal(triggers, LESS_THAN_SIZE.length);	
+		t.equal(triggers, LESS_THAN_SIZE.length);
 	});
 
 });
@@ -95,34 +98,42 @@ test('timed', async t => {
 	const DOUBLE_TIME = BASIC_DURATION * 2;
 	const HALF_TIME = BASIC_DURATION / 2;
 
-	const slowPromiseFn = async () => {
+	async function slowAsnyc() {
 		await API.sleep(DOUBLE_TIME);
 		triggers+=1;
 	}
 
-	const fastPromiseFn = async () => {
+	async function fastAsync() {
 		await API.sleep(HALF_TIME);
-		triggers+=1;		
+		triggers+=1;
 	}
+
+	const timedSlowAsync = API.timed(slowAsnyc, {
+		timeout: BASIC_DURATION,
+		task: 'slow task'
+	});
+
+	const timedFastAsync = API.timed(fastAsync, {
+		timeout: BASIC_DURATION,
+		task: 'quick task'
+	});
 
 	// a timed promise will time out if it takes too long
 	await executedWithin(t, BASIC_DURATION, MAX_DURATION_TOLERATED)(async () => {
-		const shortTime = API.timed(slowPromiseFn, BASIC_DURATION, 'time limited task');
 		triggers = 0;
 		try {
-			await shortTime();
+			await timedSlowAsync();
 		} catch (err) {
-			t.equal(err.message, 'time limited task timed out');
+			t.equal(err.message, 'slow task timed out');
 		}
 		t.equal(triggers, 0);
 	});
 
 	// but it should be fine if it finishes in time
 	await executedWithin(t, HALF_TIME, HALF_TIME * (1 + TOLERANCE))(async () => {
-		const fastTime = API.timed(fastPromiseFn, BASIC_DURATION, 'quick task');
 		triggers = 0;
-		await fastTime();
+		await timedFastAsync();
 		t.equal(triggers, 1);
-	});	
+	});
 
 });
