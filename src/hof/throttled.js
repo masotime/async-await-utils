@@ -1,17 +1,26 @@
 import Promise from 'bluebird';
 
+const DEFAULT_CONFIG = {
+	batchSize: 100
+};
+
 // throttles the number of promises a promise generating function can execute. This is useful
 // when you are firing off a large number of promises without waiting for them to be complete.
 //
 // the decorator maintains a count of the number of executions, and if the count hits a defined
 // batch size, it blocks all subsequent promises until the current batch of promises complete.
-export default function throttled(asyncFn, batchSize = 100) {
+export default function throttled(asyncFn, config) {
 	let count = 0;
 	let waitChain = Promise.resolve();
 	let promiseQueue = [];
 
+	config = {
+		...DEFAULT_CONFIG,
+		...(config || {})
+	};
+
 	return (...args) => {
-		if (count % batchSize === 0) {
+		if (count % config.batchSize === 0) {
 			// replaces the current wait chain with a Promise
 			// that waits for the current set of Promises to complete
 			// first before allowing any more promises to execute

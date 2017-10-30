@@ -1,58 +1,6 @@
 import test from 'tape';
 import * as API from 'index';
 
-const BASIC_DURATION = 200;
-const TOLERANCE = 0.1; // timing tolerance
-const MAX_DURATION_TOLERATED = (1 + TOLERANCE) * BASIC_DURATION;
-
-const executedWithin = (t, minimum, maximum) => async fn => {
-	const start = Date.now();
-	try {
-		await fn();
-	} finally {
-		const elapsed = Date.now() - start;
-		t.ok(elapsed >= minimum && elapsed <= maximum);
-	}
-}
-
-test('sleep', async t => {
-	t.plan(1);
-
-	executedWithin(t, BASIC_DURATION, MAX_DURATION_TOLERATED)(
-		async () => await API.sleep(BASIC_DURATION)
-	);
-
-});
-
-test('guarded', async t => {
-	t.plan(3);
-
-	async function working(name) {
-		await API.sleep(BASIC_DURATION);
-		return `Hello ${name}`;
-	}
-
-	async function failing() {
-		await API.sleep(BASIC_DURATION);
-		const err = new Error('failure');
-		err.other = 'pineapple';
-		throw err;
-	}
-
-	const guardedWorking = API.guarded(working);
-	const guardedFailing = API.guarded(failing);
-
-	const str = await guardedWorking('world');
-	t.equal(str, 'Hello world');
-
-	try {
-		await guardedFailing('world');
-	} catch (err) {
-		t.equal(err.message, 'failure');
-		t.equal(err.other, 'pineapple');
-	}
-});
-
 test('throttled', async t => {
 	t.plan(6);
 

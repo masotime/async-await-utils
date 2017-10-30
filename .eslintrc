@@ -10,7 +10,8 @@
   "rules": {
     "no-undef": 2,
     "no-unused-vars": 2,
-    "no-console": 0
+    "no-console": 0,
+    "import/unambiguous": 0
   },
   "env": {
     "node": true,
