@@ -37,7 +37,7 @@ export default function throttled(asyncFn, config) {
 						if (config.delay === 0) {
 							return Promise.all(queue);
 						} else {
-							return Promise.all(queue).then(sleep(config.delay))
+							return Promise.all(queue).then(sleep.bind(null, config.delay));
 						}
 
 					})
