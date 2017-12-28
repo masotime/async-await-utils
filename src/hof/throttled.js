@@ -1,7 +1,9 @@
 import Promise from 'bluebird';
+import { sleep } from 'simple';
 
 const DEFAULT_CONFIG = {
-	batchSize: 100
+	batchSize: 100,
+	delay: 0
 };
 
 // throttles the number of promises a promise generating function can execute. This is useful
@@ -32,7 +34,12 @@ export default function throttled(asyncFn, config) {
 				(queue, count) =>
 					waitChain.then(() => {
 						console.log(`Completed ${count}`);
-						return Promise.all(queue)
+						if (config.delay === 0) {
+							return Promise.all(queue);
+						} else {
+							return Promise.all(queue).then(sleep(config.delay))
+						}
+
 					})
 				)(promiseQueue, count);
 			promiseQueue = [];
