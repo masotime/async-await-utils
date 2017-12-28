@@ -42,7 +42,7 @@ test('timed', async t => {
 	});
 
 	// but it should be fine if it finishes in time
-	await executedWithin(t, HALF_TIME, HALF_TIME * (1 + TOLERANCE))(async () => {
+	await executedWithin(t, HALF_TIME, HALF_TIME * (1 + TOLERANCE * 2))(async () => {
 		triggers = 0;
 		await timedFastAsync();
 		t.equal(triggers, 1);
