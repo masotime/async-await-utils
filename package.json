@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "lint": "eslint src/*",
-    "compile": "rm -rf dist/; babel --plugins transform-runtime,add-module-exports -d dist/ src/",
+    "compile": "rm -rf dist/; babel src --plugins transform-runtime,add-module-exports -d dist/ ",
     "prepublishOnly": "npm test && npm run compile",
     "test": "npm run lint; BABEL_ENV=test nyc tape test/**/*.js | tap-spec",
     "coverage": "nyc report --reporter=text-lcov | coveralls",

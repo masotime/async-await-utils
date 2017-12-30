@@ -11,8 +11,6 @@ function logError(err) {
 	}
 }
 
-// [HOF]
-//
 // returns a guarded version of a given async function.
 // Errors are logged during synchronous or asynchronous execution
 export default function guarded(asyncFn, config) {

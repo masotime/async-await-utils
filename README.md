@@ -2,18 +2,47 @@
 
 [![npm downloads][downloads-image]][downloads-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url] [![Coverage Status][coverage-image]][coverage-url]
 
-A series of utilities to make programming with async/await easier. The utilities are split into 2 categories - HOF and Simple.
+Asynchronous I/O has a tendency to suffer a variety of contraints and/or unpredictable failures. This module provides a set of utility functions that are designed to provide optimizations, controls, fallbacks and safeguards for such scenarios.
 
-HOF or Higher Order Functions take an existing (async, promise returning) function, and returns a new function with adjusted characteristics. For example, given some async function `fetch` that makes an API call, `resilient(fetch)` will return a new function that tries 3 times (in the event any attempt fails) before giving up and throwing the original error(s).
+Quick Examples:
+
+```
+  import { resilient, timed, throttled } from 'async-await-utils/hof';
+
+  const randomlyFailing = () => new Promise((resolve, reject) => Math.random() > 0.5 ? reject() : resolve());
+  const randomDuration = () => new Promise(resolve => setTimeout(resolve, Math.random() * 2000));
+  const fastFunction = () => new Promise((resolve, reject) => setTimeout(resolve, 100));
+
+  const failsLess = resilient(randomlyFailing, { attempts: 5 });
+  const timeLimited = timed(randomDuration), { timeout: 1000 });
+  const slowedDown = throttled(fastFunction, { batchSize: 2 });
+
+  failsLess(); // resultant promise is significantly less likely to fail, since it retries 5 times
+  timeLimited(); // this promise will take no longer than 1 second to execute
+  Promise.all([slowedDown(), slowedDown(), slowedDown(), slowedDown()]); // instead of 100ms, this will take 200ms (batches of 2 promises max at a time)
+```
 
 # API
 
-## Higher Order Functions (hof)
+## Higher Order Functions
 
-```
-  import * as HOF from 'async-await-utils/hof';
-  // HOF.<api> will be available
-```
+Usage: Either `import { hof } from 'async-await-utils'` then `hof.<fn>` OR `import { <fn> } from 'async-await-utils'`
+
+⚠️  DO NOT APPLY ANY OF THE APIS TO A PROMISE DIRECTLY. APPLY THEM A PROMISE-GENERATING FUNCTION.
+
+Higher Order Functions take an existing (async, promise returning) function, and returns a new function with adjusted characteristics. For example, given some async function `fetch` that makes an API call, `resilient(fetch)` will return a new function that tries 3 times (in the event any attempt fails) before giving up and throwing the original error(s).
+
+Summary:
+
+* guarded - adds failure interception with console logging of errors
+* resilient - makes retry attempts
+* reuseInFlight - debounce repeat calls to an in-flight Promise
+* throttled - limit parallel execution of Promises
+* timed - time limit promises
+
+Misc:
+
+* resilientTimed - convenience composition of resilient and timed.
 
 ### `guarded`
 
@@ -49,7 +78,12 @@ Makes a function retry a given number of times (default 3) before giving up and 
 
 ### `reuseInFlight`
 
-KIV - but essentially `debounces` repeated calls to a function against any promise that is already running
+If a promise generating function is called with `...args`, and subsequently called _again_ with the same `...args` while the first Promise is still unresolved, then the first Promise is returned instead of creating a new Promise.
+
+The default method used to determine if `...args` are the same is via JSON stringification, but this can be changed.
+
+```
+```
 
 ### `throttled`
 
@@ -70,10 +104,22 @@ Limits the maximum number of times (default 100) a promise can be executed simul
 
 * `batchSize` - default 100, how many promises must fully resolve before allowing more promises to proceed
 
+### `timed` (time-limited)
+
+Places an upper bound as to how long a Promise can take to resolve. If the Promise takes longer than the specified duration (default 1000ms) then it automatically fails.
+
+Special note: Do not time-limit throttled promises - throttle time-limited promises.
+
+```
+  const randomDuration = () => new Promise((ok, fail) => setTimeout(0, Math.random() * 2000));
+  const oneSecondMax = timed(randomDuration, { timeout: 1000 });
+  Array(5).fill().map(oneSecondMax)
+```
+
 ## Simple Functions (simple)
 
 ```
-  import * as Simple from 'async-await-utils/hof';
+  import * as Simple from 'async-await-utils';
   // Simple.<api> will be available
 ```
 
