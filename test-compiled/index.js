@@ -65,16 +65,20 @@ test('the timed README example', assert => {
 
   let unboundDuration = 0;
   let boundDuration = 0;
-  const now = Date.now();
 
-  const unboundPromises = Array(100).fill().map(randomDuration);
-  const boundPromises = Array(100).fill().map(() => timeLimited().catch(() => {}));
-
-	const boundTimer = Promise.all(boundPromises).then(() => boundDuration = Date.now() - now);
-  const unboundTimer = Promise.all(unboundPromises).then(() => unboundDuration = Date.now() - now);
-
-  Promise.all([unboundTimer, boundTimer])
+  // this test is extremely flaky so we do it step by step
+  Promise.resolve()
     .then(() => {
+       const start = Date.now();
+       return Promise
+         .all(Array(100).fill().map(randomDuration))
+         .then(() => { unboundDuration = Date.now() - start; });
+    }).then(() => {
+      const start = Date.now();
+       return Promise
+         .all(Array(100).fill().map(() => timeLimited().catch(() => {})))
+         .then(() => { boundDuration = Date.now() - start; });
+    }).then(() => {
       console.log({ unboundDuration, boundDuration });
       assert.ok(unboundDuration > 150, 'control promises has at least one promise falling above 75th percentile');
       assert.ok(boundDuration <= 130, 'timed promises are within 65th percentile'); // assuming an error of less than 10%
@@ -95,7 +99,7 @@ test('the throttled README example', assert => {
   const unboundTimer = Promise.all(unboundPromises).then(() => unboundDuration = Date.now() - now);
   const boundTimer = Promise.all(boundPromises).then(() => boundDuration = Date.now() - now);
 
-	// instead of 100ms, this will take 200ms (batches of 2 promises max at a time)
+  // instead of 100ms, this will take 200ms (batches of 2 promises max at a time)
   Promise.all([unboundTimer, boundTimer])
     .then(() => {
       // assuming at least one out of 100 is in 75% percentile...
