@@ -1,6 +1,6 @@
 {
   "name": "async-await-utils",
-  "version": "2.0.0-3",
+  "version": "2.0.0-4",
   "description": "A series of utilities to make programming with async/await easier",
   "main": "dist/index.js",
   "scripts": {
