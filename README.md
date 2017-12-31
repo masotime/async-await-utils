@@ -18,7 +18,7 @@ Quick Examples:
   const slowedDown = throttled(fastFunction, { batchSize: 2 });
 
   failsLess(); // resultant promise is significantly less likely to fail, since it retries 5 times
-  timeLimited(); // this promise will take no longer than 1 second to execute
+  timeLimited(); // this promise will fail if it takes longer than 1 second to execute
   Promise.all([slowedDown(), slowedDown(), slowedDown(), slowedDown()]); // instead of 100ms, this will take 200ms (batches of 2 promises max at a time)
 ```
 
@@ -125,6 +125,7 @@ Limits the maximum number of times (default 100) a promise can be executed simul
 `options` is an optional object that can contain the following parameters:
 
 * `batchSize` - default 100, how many promises must fully resolve before allowing more promises to proceed
+* `delay` - default 0. If it is preferred to wait a while before starting the next batch, specify a delay in milliseconds.
 
 ### `timed` (time-limited)
 
@@ -137,6 +138,12 @@ Special note: Do not time-limit throttled promises - throttle time-limited promi
   const oneSecondMax = timed(randomDuration, { timeout: 1000 });
   Array(5).fill().map(oneSecondMax)
 ```
+
+`options` is an optional object that can contain the following parameters:
+
+* `task` - default `promise resolution`, just a string that is attached to the Error thrown
+* `timeout` - default 1000, the maximum amount of time in milliseconds that a promise is allowed to resolve
+* `context` - default `null`, binds the given function against the context before executing it.
 
 ## Simple Functions (simple)
 
