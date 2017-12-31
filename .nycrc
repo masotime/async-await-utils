@@ -1,5 +1,5 @@
 {
-	"include": [ "src/*.js" ],
+	"include": [ "src/**/*.js" ],
 	"require": [ "babel-register", "babel-polyfill" ],
 	"sourceMap": false,
 	"instrument": false,

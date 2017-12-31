@@ -5,9 +5,11 @@
   "main": "dist/index.js",
   "scripts": {
     "lint": "eslint src/*",
-    "compile": "rm -rf dist/; babel src --plugins transform-runtime,add-module-exports -d dist/ ",
+    "compile": "rm -rf dist/; babel src --plugins add-module-exports -d dist/ ",
     "prepublishOnly": "npm test && npm run compile",
-    "test": "npm run lint; BABEL_ENV=test nyc tape test/**/*.js | tap-spec",
+    "test": "npm run lint; npm run test:source && npm run test:compiled",
+    "test:source": "BABEL_ENV=test nyc tape test/**/*.js | tap-spec",
+    "test:compiled": "npm run compile; tape -r babel-register test-compiled/**/*.js | tap-spec",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "nuke": "rm -rf node_modules/; npm install"
   },
@@ -37,7 +39,7 @@
     "eslint": "^3",
     "eslint-import-resolver-babel-module": "^2",
     "eslint-plugin-import": "^2",
-    "nyc": "^9.0.1",
+    "nyc": "^11.4.1",
     "tap-spec": "^4.1.1",
     "tape": "^4.6.2"
   }

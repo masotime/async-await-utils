@@ -12,14 +12,15 @@ export default function resilient(asyncFn, config) {
 		...(config || {})
 	};
 
-	const errors = [];
 	const maxAttempts = config.attempts;
 
-	async function resilientFn(...args) {
-		try {
-			return await asyncFn.apply(config.context, args);
-		} catch (err) {
-			if (config.attempts <= 0) {
+	function resilientFn(...args) {
+		const errors = [];
+		let currentAttempts = 0;
+
+		// recursive "catcher"
+		function statefulCatch(err) {
+			if (currentAttempts >= config.attempts) {
 				// give up
 				throw new VError({
 					name: 'ResilientPromiseFailed',//
@@ -27,11 +28,14 @@ export default function resilient(asyncFn, config) {
 					info: { task: config.task, maxAttempts }
 				}, `Resilient ${config.task} failed after ${maxAttempts}`);
 			} else {
-				config.attempts -= 1;
+				currentAttempts += 1;
 				errors.push(err);
-				return resilientFn(...args);
+				return asyncFn.apply(config.context, args).catch(statefulCatch);
 			}
 		}
+
+		// kick off the chain
+		return asyncFn.apply(config.context, args).catch(statefulCatch);
 	}
 
 	return resilientFn;
