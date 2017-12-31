@@ -1,5 +1,6 @@
 const DEFAULT_CONFIG = {
-	createKey(...args) { return JSON.stringify(args); }
+	createKey(args) { return JSON.stringify(args); },
+	ignoreSingleUndefined: false
 };
 
 // for a given Promise-generating function, track each execution by the stringified
@@ -15,8 +16,13 @@ export default function reuseInFlight(asyncFn, config) {
 
 	const inflight = {};
 
-	return async function debounced(...args) {
-		const key = config.createKey(...args);
+	return function debounced(...args) {
+		if (config.ignoreSingleUndefined && args.length === 1 && args[0] === undefined) {
+			console.warn('Ignoring single undefined arg (reuseInFlight)');
+			args = [];
+		}
+
+		const key = config.createKey(args);
 		if (!inflight.hasOwnProperty(key)) {
 			// WE DO NOT AWAIT, we are storing the promise itself
 			inflight[key] = asyncFn.apply(this, args)

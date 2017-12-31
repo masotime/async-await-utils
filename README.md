@@ -11,7 +11,7 @@ Quick Examples:
 
   const randomlyFailing = () => new Promise((resolve, reject) => Math.random() > 0.5 ? reject() : resolve());
   const randomDuration = () => new Promise(resolve => setTimeout(resolve, Math.random() * 2000));
-  const fastFunction = () => new Promise((resolve, reject) => setTimeout(resolve, 100));
+  const fastFunction = () => new Promise(resolve => setTimeout(resolve, 100));
 
   const failsLess = resilient(randomlyFailing, { attempts: 5 });
   const timeLimited = timed(randomDuration), { timeout: 1000 });
@@ -26,19 +26,19 @@ Quick Examples:
 
 ## Higher Order Functions
 
-Usage: Either `import { hof } from 'async-await-utils'` then `hof.<fn>` OR `import { <fn> } from 'async-await-utils'`
+Usage: Either `import { hof } from 'async-await-utils'` then `hof.<fn>` OR `import { <fn> } from 'async-await-utils/hof'`
 
-⚠️  DO NOT APPLY ANY OF THE APIS TO A PROMISE DIRECTLY. APPLY THEM A PROMISE-GENERATING FUNCTION.
+⚠️  **DO NOT APPLY ANY OF THE APIS TO A PROMISE DIRECTLY. APPLY THEM A PROMISE-GENERATING FUNCTION.**
 
 Higher Order Functions take an existing (async, promise returning) function, and returns a new function with adjusted characteristics. For example, given some async function `fetch` that makes an API call, `resilient(fetch)` will return a new function that tries 3 times (in the event any attempt fails) before giving up and throwing the original error(s).
 
 Summary:
 
-* guarded - adds failure interception with console logging of errors
-* resilient - makes retry attempts
-* reuseInFlight - debounce repeat calls to an in-flight Promise
-* throttled - limit parallel execution of Promises
-* timed - time limit promises
+* `guarded` - adds failure interception with console logging of errors
+* `resilient` - makes retry attempts
+* `reuseInFlight` - debounce repeat calls to an in-flight Promise
+* `throttled` - limit parallel execution of Promises
+* `timed` - time limit promises
 
 Misc:
 
@@ -50,9 +50,9 @@ Guards the given asynchronous function with a try-catch, and logs out the error 
 
 ```
   const failingFunction = () => throw new Error('fails');
-  const guarded = HOF.guarded(failingFunction, <options>);
+  const guardedFunction = hof.guarded(failingFunction, <options>);
 
-  failingFunction(); // will log the error out
+  guardedFunction(); // will log the error out
 ```
 
 `options` is an optional object that can contain the following parameters:
@@ -65,7 +65,7 @@ Makes a function retry a given number of times (default 3) before giving up and 
 
 ```
   const unreliableFunction = threshold => if (Math.random() < threshold) throw new Error();
-  const resilientFunction = HOF.resilient(unreliableFunction, <options>);
+  const resilientFunction = hof.resilient(unreliableFunction, <options>);
 
   resilientFunction(0.5); // Has a 6.25% chance of throwing, improved over the passed in 50%
  ```
@@ -78,12 +78,34 @@ Makes a function retry a given number of times (default 3) before giving up and 
 
 ### `reuseInFlight`
 
-If a promise generating function is called with `...args`, and subsequently called _again_ with the same `...args` while the first Promise is still unresolved, then the first Promise is returned instead of creating a new Promise.
+If a promise generating function is called with `...args`, and subsequently called _again_ with the same `...args` while the first Promise is still unresolved, then the first Promise is returned instead of creating a new Promise, effectively "debouncing" the promise.
+
+```
+	const debounced = hof.reuseInFlight(asyncFn, <options>);
+```
+
+This is particularly useful for API calls that you expect to return data that is unlikely to change frequently.
 
 The default method used to determine if `...args` are the same is via JSON stringification, but this can be changed.
 
 ```
+// assume sleep(ms) works like described in the "simple" API below
+let callCount = 0;
+const oneSecondFunction = () => new Promise(resolve =>
+	setTimeout(() => resolve(callCount++), 1000);
+);
+
+const debounced = hof.reuseInFlight(oneSecondFunction);
+const result1 = debounced(); // will return 0;
+const result2 = sleep(100).then(() => debounced()) // will return 0
+const result3 = sleep(1100).then(() => debounced()) // will return 1
+const result3 = sleep(1100).then(() => debounced('1')) // will return 2, different args
 ```
+
+`options` is an optional object that can contain the following parameters:
+
+* `createKey(args)` - defaults to `{ return JSON.stringify(args); }`, use this to customize how unique function calls are recognized
+* `ignoreSingleUndefined` - defaults to `false`. In the calls above, doing `sleep(100).then(debounced)` is considered different from `sleep(100).then(() => debounced())`, because Promise resolution defaults to a minimal single undefined result. If you want to treat a single undefined arg as no args, set this to `true`.
 
 ### `throttled`
 
@@ -118,16 +140,15 @@ Special note: Do not time-limit throttled promises - throttle time-limited promi
 
 ## Simple Functions (simple)
 
-```
-  import * as Simple from 'async-await-utils';
-  // Simple.<api> will be available
-```
+Simple functions perform some task immediately rather than returning a function. In some cases, they will take a promise-generating function as input.
 
 ### `sleep`
 
 Pauses execution for the given `duration` in ms
 
 ```
+import { sleep } from 'async-await-utils/simple';
+
 async function() {
 	await sleep(1000);
 	console.log('1 second has passed');
@@ -139,6 +160,8 @@ async function() {
 Runs the given asynchronous function, catching and logging any errors before rethrowing. This is useful if you want to make sure an async function's errors don't get swallowed if you forget to `catch`.
 
 ```
+import { execute } from 'async-await-utils/simple';
+
 async function main(name) {
 	console.log(`hello ${name}');
 	throw new Error('boom');

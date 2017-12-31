@@ -19,12 +19,12 @@ export default function guarded(asyncFn, config) {
 		...(config || {})
 	};
 
-	return async function guardedFn(...args) {
-		try {
-			return await asyncFn.apply(config.context, args);
-		} catch (err) {
-			logError(err);
-			throw err;
-		}
+	return function guardedFn(...args) {
+		return asyncFn
+			.apply(config.context, args)
+			.catch(err => {
+				logError(err);
+				throw err;
+			});
 	};
 }

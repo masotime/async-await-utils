@@ -14,7 +14,7 @@ export default function timed(asyncFn, config) {
 		...(config || {})
 	};
 
-	return async function timedFn(...args) {
+	return function timedFn(...args) {
 		return Promise.resolve(
 			asyncFn.apply(config.context, args)
 		).timeout(config.timeout, `${config.task} timed out`);

@@ -38,7 +38,7 @@ test('the sub exports', assert => {
 });
 
 const randomlyFailing = () => new Promise((resolve, reject) => Math.random() > 0.5 ? reject() : resolve());
-const randomDuration = () => new Promise(resolve => setTimeout(resolve, Math.random() * 20));
+const randomDuration = () => new Promise(resolve => setTimeout(resolve, Math.random() * 200));
 const fastFunction = () => new Promise(resolve => setTimeout(resolve, 100));
 
 test('the resilient README example', assert => {
@@ -60,12 +60,48 @@ test('the resilient README example', assert => {
     });
 });
 
-test.skip('the timed README example', assert => {
-  const timeLimited = hof.timed(randomDuration, { timeout: 10 });
-  timeLimited(); // this promise will take no longer than 1 second to execute
+test('the timed README example', assert => {
+  const timeLimited = hof.timed(randomDuration, { timeout: 100 });
+
+  let unboundDuration = 0;
+  let boundDuration = 0;
+  const now = Date.now();
+
+  const unboundPromises = Array(100).fill().map(randomDuration);
+  const boundPromises = Array(100).fill().map(() => timeLimited().catch(() => {}));
+
+  const unboundTimer = Promise.all(unboundPromises).then(() => unboundDuration = Date.now() - now);
+  const boundTimer = Promise.all(boundPromises).then(() => boundDuration = Date.now() - now);
+
+  Promise.all([unboundTimer, boundTimer])
+    .then(() => {
+      // assuming at least one out of 100 is in 75% percentile...
+      console.log({ unboundDuration, boundDuration });
+      assert.ok(unboundDuration > 150, 'control promises has at least one promise failing at 75% percentile');
+      assert.ok(boundDuration <= 115, 'timed promises are within 15% of timeout'); // assuming an error of less than 10%
+      assert.end();
+    });
 });
 
-test.skip('the throttled README example', assert => {
+test('the throttled README example', assert => {
   const slowedDown = hof.throttled(fastFunction, { batchSize: 2 });
-  Promise.all([slowedDown(), slowedDown(), slowedDown(), slowedDown()]); // instead of 100ms, this will take 200ms (batches of 2 promises max at a time)
-});
+
+  let unboundDuration = 0;
+  let boundDuration = 0;
+  const now = Date.now();
+
+  const unboundPromises = Array(10).fill().map(fastFunction);
+  const boundPromises = Array(10).fill().map(slowedDown);
+
+  const unboundTimer = Promise.all(unboundPromises).then(() => unboundDuration = Date.now() - now);
+  const boundTimer = Promise.all(boundPromises).then(() => boundDuration = Date.now() - now);
+
+	// instead of 100ms, this will take 200ms (batches of 2 promises max at a time)
+  Promise.all([unboundTimer, boundTimer])
+    .then(() => {
+      // assuming at least one out of 100 is in 75% percentile...
+      console.log({ unboundDuration, boundDuration });
+      assert.ok(unboundDuration <= 115, '10 control promises run in parallel within 15% of 100ms');
+      assert.ok(boundDuration >= 500, '10 throttled promises take at least 10/2 = 5 batches of 100ms to complete');
+      assert.end();
+    });});
