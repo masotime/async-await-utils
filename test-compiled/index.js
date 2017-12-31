@@ -1,7 +1,7 @@
 // tests only the compiled output in a backward compatible manner
 const test = require('tape');
 
-const { simple, hof } = require('async-await-utils');
+const rootExports = require('async-await-utils');
 const simpleExports = require('async-await-utils/simple');
 const hofExports = require('async-await-utils/hof');
 
@@ -19,12 +19,12 @@ function validateApis(assert, apiObj, apiExpected, exportName) {
 }
 
 test('the root exports', assert => {
-  assert.ok(simple, '"simple" is a root export');
-  assert.ok(hof, '"hof" is a root export');
+  assert.ok(rootExports.simple, '"simple" is a root export');
+  assert.ok(rootExports.hof, '"hof" is a root export');
 
   // the root exports must themselves have the sub exports
-  validateApis(assert, simple, simpleExpected, 'root.simple');
-  validateApis(assert, hof, hofExpected, 'root.hof');
+  validateApis(assert, rootExports.simple, simpleExpected, 'root.simple');
+  validateApis(assert, rootExports.hof, hofExpected, 'root.hof');
 
   assert.end();
 });
@@ -42,7 +42,7 @@ const randomDuration = () => new Promise(resolve => setTimeout(resolve, Math.ran
 const fastFunction = () => new Promise(resolve => setTimeout(resolve, 100));
 
 test('the resilient README example', assert => {
-  const failsLess = hof.resilient(randomlyFailing, { attempts: 5 });
+  const failsLess = rootExports.hof.resilient(randomlyFailing, { attempts: 5 });
 
   let often = 0;
   let less = 0;
@@ -61,7 +61,7 @@ test('the resilient README example', assert => {
 });
 
 test('the timed README example', assert => {
-  const timeLimited = hof.timed(randomDuration, { timeout: 100 });
+  const timeLimited = rootExports.hof.timed(randomDuration, { timeout: 100 });
 
   let unboundDuration = 0;
   let boundDuration = 0;
@@ -70,21 +70,20 @@ test('the timed README example', assert => {
   const unboundPromises = Array(100).fill().map(randomDuration);
   const boundPromises = Array(100).fill().map(() => timeLimited().catch(() => {}));
 
+	const boundTimer = Promise.all(boundPromises).then(() => boundDuration = Date.now() - now);
   const unboundTimer = Promise.all(unboundPromises).then(() => unboundDuration = Date.now() - now);
-  const boundTimer = Promise.all(boundPromises).then(() => boundDuration = Date.now() - now);
 
   Promise.all([unboundTimer, boundTimer])
     .then(() => {
-      // assuming at least one out of 100 is in 75% percentile...
       console.log({ unboundDuration, boundDuration });
-      assert.ok(unboundDuration > 150, 'control promises has at least one promise failing at 75% percentile');
-      assert.ok(boundDuration <= 115, 'timed promises are within 15% of timeout'); // assuming an error of less than 10%
+      assert.ok(unboundDuration > 150, 'control promises has at least one promise falling above 75th percentile');
+      assert.ok(boundDuration <= 130, 'timed promises are within 65th percentile'); // assuming an error of less than 10%
       assert.end();
     });
 });
 
 test('the throttled README example', assert => {
-  const slowedDown = hof.throttled(fastFunction, { batchSize: 2 });
+  const slowedDown = rootExports.hof.throttled(fastFunction, { batchSize: 2 });
 
   let unboundDuration = 0;
   let boundDuration = 0;
