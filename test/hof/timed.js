@@ -36,6 +36,7 @@ test('timed', async t => {
 		try {
 			await timedSlowAsync();
 		} catch (err) {
+			console.log(err, err.name, err.message);
 			t.equal(err.message, 'slow task timed out');
 		}
 		t.equal(triggers, 0);
@@ -49,3 +50,5 @@ test('timed', async t => {
 	});
 
 });
+
+test.skip('timed context?');

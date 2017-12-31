@@ -1,12 +1,13 @@
 const DEFAULT_CONFIG = {
-	context: null
+	context: null,
+	log: (...args) => console.error(...args)
 };
 
-function logError(err) {
-	console.error(err.stack || err);
-	for (let key in err) {
+function logError(log, err) {
+	log(err.stack || err);
+	for (const key in err) {
 		if (key !== 'stack') {
-			console.error(`${key} = ${err[key]}`);
+			log(`${key} = ${err[key]}`);
 		}
 	}
 }
@@ -23,7 +24,7 @@ export default function guarded(asyncFn, config) {
 		return asyncFn
 			.apply(config.context, args)
 			.catch(err => {
-				logError(err);
+				logError(config.log, err);
 				throw err;
 			});
 	};

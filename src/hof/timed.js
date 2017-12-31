@@ -1,4 +1,4 @@
-import Promise from 'bluebird';
+import { sleep } from 'simple';
 
 const DEFAULT_CONFIG = {
 	task: 'promise resolution',
@@ -15,8 +15,7 @@ export default function timed(asyncFn, config) {
 	};
 
 	return function timedFn(...args) {
-		return Promise.resolve(
-			asyncFn.apply(config.context, args)
-		).timeout(config.timeout, `${config.task} timed out`);
+		const pacer = sleep(config.timeout).then(() => Promise.reject(new Error(`${config.task} timed out`)));
+		return Promise.race([asyncFn.apply(config.context, args), pacer]);
 	}
 }

@@ -76,3 +76,6 @@ test('ignoreSingleUndefined reuseInFlight', assert => {
 		assert.end();
 	})
 });
+
+test.skip('reuseInFlight w/custom key function');
+test.skip('reuseInFlight w/custom context');
