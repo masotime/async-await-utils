@@ -1,16 +1,16 @@
 // tests only the compiled output in a backward compatible manner
-const test = require('tape');
+var test = require('tape');
 
-const rootExports = require('async-await-utils');
-const simpleExports = require('async-await-utils/simple');
-const hofExports = require('async-await-utils/hof');
+var rootExports = require('async-await-utils');
+var simpleExports = require('async-await-utils/simple');
+var hofExports = require('async-await-utils/hof');
 
-const hofExpected = ['guarded', 'resilient', 'reuseInFlight', 'throttled', 'timed'];
-const simpleExpected = ['execute', 'sleep'];
+var hofExpected = ['guarded', 'resilient', 'reuseInFlight', 'throttled', 'timed'];
+var simpleExpected = ['execute', 'sleep'];
 
 function validateApis(assert, apiObj, apiExpected, exportName) {
-  const apiCount = apiExpected.length;
-  let i, apiName;
+  var apiCount = apiExpected.length;
+  var i, apiName;
 
   for (i = 0; i < apiCount; i += 1) {
     apiName = apiExpected[i];
@@ -37,18 +37,18 @@ test('the sub exports', assert => {
   assert.end();
 });
 
-const randomlyFailing = () => new Promise((resolve, reject) => Math.random() > 0.5 ? reject() : resolve());
-const randomDuration = () => new Promise(resolve => setTimeout(resolve, Math.random() * 200));
-const fastFunction = () => new Promise(resolve => setTimeout(resolve, 100));
+var randomlyFailing = () => new Promise((resolve, reject) => Math.random() > 0.5 ? reject() : resolve());
+var randomDuration = () => new Promise(resolve => setTimeout(resolve, Math.random() * 200));
+var fastFunction = () => new Promise(resolve => setTimeout(resolve, 100));
 
 test('the resilient README example', assert => {
-  const failsLess = rootExports.hof.resilient(randomlyFailing, { attempts: 5 });
+  var failsLess = rootExports.hof.resilient(randomlyFailing, { attempts: 5 });
 
-  let often = 0;
-  let less = 0;
+  var often = 0;
+  var less = 0;
 
-  const fragilePromises = Array(100).fill().map(() => randomlyFailing().catch(() => { often += 1 }));
-  const resilientPromises = Array(100).fill().map(() => failsLess().catch(() => less += 1));
+  var fragilePromises = Array(100).fill().map(() => randomlyFailing().catch(() => { often += 1 }));
+  var resilientPromises = Array(100).fill().map(() => failsLess().catch(() => less += 1));
 
   Promise
     .all(fragilePromises.concat(resilientPromises))
@@ -61,20 +61,20 @@ test('the resilient README example', assert => {
 });
 
 test('the timed README example', assert => {
-  const timeLimited = rootExports.hof.timed(randomDuration, { timeout: 100 });
+  var timeLimited = rootExports.hof.timed(randomDuration, { timeout: 100 });
 
-  let unboundDuration = 0;
-  let boundDuration = 0;
+  var unboundDuration = 0;
+  var boundDuration = 0;
 
   // this test is extremely flaky so we do it step by step
   Promise.resolve()
     .then(() => {
-       const start = Date.now();
+       var start = Date.now();
        return Promise
          .all(Array(100).fill().map(randomDuration))
          .then(() => { unboundDuration = Date.now() - start; });
     }).then(() => {
-      const start = Date.now();
+      var start = Date.now();
        return Promise
          .all(Array(10).fill().map(() => timeLimited().catch(() => {}))) // surrender
          .then(() => { boundDuration = Date.now() - start; });
@@ -87,17 +87,17 @@ test('the timed README example', assert => {
 });
 
 test('the throttled README example', assert => {
-  const slowedDown = rootExports.hof.throttled(fastFunction, { batchSize: 2 });
+  var slowedDown = rootExports.hof.throttled(fastFunction, { batchSize: 2 });
 
-  let unboundDuration = 0;
-  let boundDuration = 0;
-  const now = Date.now();
+  var unboundDuration = 0;
+  var boundDuration = 0;
+  var now = Date.now();
 
-  const unboundPromises = Array(10).fill().map(fastFunction);
-  const boundPromises = Array(10).fill().map(slowedDown);
+  var unboundPromises = Array(10).fill().map(fastFunction);
+  var boundPromises = Array(10).fill().map(slowedDown);
 
-  const unboundTimer = Promise.all(unboundPromises).then(() => unboundDuration = Date.now() - now);
-  const boundTimer = Promise.all(boundPromises).then(() => boundDuration = Date.now() - now);
+  var unboundTimer = Promise.all(unboundPromises).then(() => unboundDuration = Date.now() - now);
+  var boundTimer = Promise.all(boundPromises).then(() => boundDuration = Date.now() - now);
 
   // instead of 100ms, this will take 200ms (batches of 2 promises max at a time)
   Promise.all([unboundTimer, boundTimer])
