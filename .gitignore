@@ -1,5 +1,8 @@
 node_modules
 *.log
 dist/
+hof/
+simple/
+transpiled.js
 .nyc_output
 coverage/

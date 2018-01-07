@@ -1,9 +1,9 @@
 // tests only the compiled output in a backward compatible manner
 var test = require('tape');
 
-var rootExports = require('async-await-utils');
-var simpleExports = require('async-await-utils/simple');
-var hofExports = require('async-await-utils/hof');
+var rootExports = require('..');
+var simpleExports = require('../simple');
+var hofExports = require('../hof');
 
 var hofExpected = ['guarded', 'resilient', 'reuseInFlight', 'throttled', 'timed'];
 var simpleExpected = ['execute', 'sleep'];
