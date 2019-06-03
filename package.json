@@ -1,6 +1,6 @@
 {
   "name": "async-await-utils",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "A series of utilities to make programming with async/await easier",
   "main": "transpiled.js",
   "scripts": {
