@@ -55,7 +55,7 @@
     "babel-plugin-istanbul": "^5.1.4",
     "babel-plugin-module-resolver": "^3.2.0",
     "coveralls": "^3.0.3",
-    "eslint": "^3",
+    "eslint": "^4",
     "eslint-import-resolver-babel-module": "^5.1.0",
     "eslint-plugin-import": "^2",
     "nyc": "^14.1.1",
