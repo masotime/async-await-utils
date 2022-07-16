@@ -1,6 +1,6 @@
 # async-await-utils
 
-[![npm downloads][downloads-image]][downloads-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url] [![Coverage Status][coverage-image]][coverage-url]
+[![npm downloads][downloads-image]][downloads-url] [![Build Status][travis-image]][travis-url] [![Coverage Status][coverage-image]][coverage-url]
 
 Asynchronous I/O has a tendency to suffer a variety of contraints and/or unpredictable failures. This module provides a set of utility functions that are designed to provide optimizations, controls, fallbacks and safeguards for such scenarios.
 
@@ -181,7 +181,5 @@ execute(main, 'world'); // logs "hello world" then will log the "boom" error eve
 [downloads-url]: https://www.npmjs.com/package/async-await-utils
 [travis-image]: https://travis-ci.org/masotime/async-await-utils.svg?branch=master
 [travis-url]: https://travis-ci.org/masotime/async-await-utils
-[daviddm-image]: https://david-dm.org/masotime/async-await-utils.svg?theme=shields.io
-[daviddm-url]: https://david-dm.org/masotime/async-await-utils
 [coverage-image]: https://coveralls.io/repos/github/masotime/async-await-utils/badge.svg?branch=master
 [coverage-url]: https://coveralls.io/github/masotime/async-await-utils?branch=master
