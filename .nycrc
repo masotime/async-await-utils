@@ -1,7 +1,7 @@
 {
 	"include": [ "src/**/*.js" ],
 	"exclude": ["src/hof/resilientTimed.js"],
-	"require": [ "@babel/register", "@babel/polyfill" ],
+	"require": [ "@babel/register", "core-js/stable" ],
 	"sourceMap": false,
 	"instrument": false,
 	"reporter": [ "text", "lcov" ]

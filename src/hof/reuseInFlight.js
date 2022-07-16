@@ -23,7 +23,7 @@ export default function reuseInFlight(asyncFn, config) {
 		}
 
 		const key = config.createKey(args);
-		if (!inflight.hasOwnProperty(key)) {
+		if (!Object.prototype.hasOwnProperty.call(inflight,key)) {
 			// WE DO NOT AWAIT, we are storing the promise itself
 			inflight[key] = asyncFn.apply(this, args)
 				.then(results => {
